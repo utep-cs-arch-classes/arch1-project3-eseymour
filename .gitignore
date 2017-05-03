@@ -1,0 +1,12 @@
+# Exclude binary files
+*.o
+*.a
+*.elf
+
+# Exclude generated files
+h/
+lib/
+
+# Exclude emacs temporary files
+\#*\#
+.\#*
