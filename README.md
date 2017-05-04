@@ -1,89 +1,51 @@
-# Project 3: LCD Game
-## Introduction
+# Minesweeper
 
-Continuing your effort to help ACME Solutions provide Christmas toys, 
-your task is now to develop a game for the LCD screen.  You should 
-utilize the knowledge you havegained working with the buttons and 
-buzzer.  In addition, a series of libraries have been found to assist
-you in creating your game.
+For Project 3, I implemented a Minesweeper game. The game is incomplete and non interactive at the moment.
 
-Students can propose alternate projects that demonstrate
-similar skills.  These proposals must approved by the course
-instructor in writing (e.g. email) at least two weeks before the
-project due date. 
+It also includes a sprite library to be able to draw the Minesweeper graphics.
 
-## Requirements
-Your game should meet the following minimum criteria:
+One of the draw routines, `drawBlock(u_int x, u_int y)` is written in assembly since it used a switch.
 
-- dynamically render graphical elements that move
--- including one original algorithmically rendered graphical element 
-- handle colisions properly with other shapes and area boundaries
-- produce sounds triggered by game events
--- in a manner that does not cause the game to pause
-- communicate with the player using text
-- include a state machine written in assembly language
-- respond to user input (from buttons)
+## How to compile it
 
-Don't forget to properly document your source code and how to play the game.
+From the root directory of the repository type:
 
-## Grading Criteria
+```shell
+$ make
+```
 
-Your lab will be graded based on the proficiencies it demonstrates.
-While we appreciate the complexity of an
-arcade quality game, our primary objective is that you demonstrate
-course-relevant skills including
+## How to run it
 
-- relevant development tools such as make and emacs
-- use of timer interrupts to control program timing
-- use of switch interrupts to determine when swiches change
-- modularization into multiple source files (including header files)
-- use of explicit state machines to implement program functionality
-- ability to develop or modify (and of course use) linked data structures in c
-- mature programming
--- readable, appropriate algorithms, modularization, data structures, symbol names etc
+After first compiling, from the root directory of the repository type:
 
-Below is an example of a sample "pong" application that would fully satisfy
-requirments.  The graphics would include
+```shell
+$ cd minesweeper
+$ make load
+```
 
-- an arena to play in
-- a ball
-- two paddles (using a shape of your own design)
-- a score
+To run the spriteLib demo instead, write
 
-And behaviors that include
+```shell
+$ cd spriteLib
+$ make load
+```
 
-- the ball moves in 2d, with direction changing when it collides with
-  screen elements
-- a sound plays when a collision occurs
--- without causing the ball's motion to pause
-- scores
- - that advance through multiple rounds of play
- - that the ball either moves in-front-of or behind
+## How to use it
 
-## Libraries
+Currently, it does not respond to user input. It does draw a board, then populates it with mines and shows the solution.
 
-Several libraries are provided.  
-They can be installed by the default production of Makefile in the repostiory's 
-root directory, or by a "$make install" in each of their subdirs.
+## Resources used
 
-- timerLib: Provides code to configure Timer A to generate watchdog timer interrupts at 250 Hz
+For the random number generator, I used a XOR shift generator as specified in http://b2d-f9r.blogspot.com/2010/08/16-bit-xorshift-rng-now-with-more.html
 
-- p2SwLib: Provides an interrupt-driven driver for the four switches on the LCD board and a demo program illustrating its intended functionality.
+## More info on spriteLib
 
-- lcdLib: Provides low-level lcd control primitives, defines several fonts, 
-and a simple demo program that uses them.
+spriteLib defines 3 types of sprites, 8x8, 8x16 and 16x16.
 
-- shapeLib: Provides an translatable model for shapes that can be translated 
-and rendered as layers.
+Each sprite can only have 4 colors from a 16 color global palette. It is possible to switch palettes during computation, allowing graphics to be stored using a compact representation.
 
-- circleLib: Provides a circle model as a vector of demi-chord lengths,
-pre-computed circles as layers with a variety of radii, 
-and a demonstration program that renders a circle.
+Palettes are simply a 16 word array with each color represented in 16 bit BGR.
 
+For every sprite struct, the first word represents the colors used by the sprite as a 4 half byte array. After the first word, it is followed by an array of rows, starting from the top, and going to the bottom.
 
-## Demonstration program
-
-- shape-motion-demo: A demonstration program that uses shapeLib to represent
-and render shapes that move.
-
-
+Then each row is represented as a 2 bit array, where each value represents each sprite color used. Colors are stored from left to right LSB
