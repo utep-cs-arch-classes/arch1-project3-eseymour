@@ -45,6 +45,7 @@ int main(void) {
       }
     }
   }
+  
   drawBoard();
   drawMines();
   drawCursor(cursorX, cursorY);

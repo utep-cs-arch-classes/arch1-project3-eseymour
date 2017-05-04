@@ -22,7 +22,7 @@ void boardGenerateMines(u_char startX, u_char startY) {
   
   while (minesRemaining < NUM_MINES) {
     char x = rngNext() % BOARD_WIDTH;
-    char y = rngNext() % BOARD_WIDTH;
+    char y = rngNext() % BOARD_HEIGHT;
 
     if (!isMine(x, y)) {
       if (startX - x > 1 || startX - x < -1 || startY - y > 1 || startY - y < -1) {
