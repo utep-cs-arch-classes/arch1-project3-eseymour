@@ -1,33 +1,43 @@
 #include <libTimer.h>
 #include <lcdutils.h>
 #include <lcddraw.h>
+#include <msp430.h>
 #include <sprite.h>
 
+#include "board.h"
+#include "draw.h"
+#include "random.h"
 #include "sprites.h"
+
+u_char cursorX, cursorY;
 
 int main(void) {
   configureClocks();
+  rngSeedSram();
   lcd_init();
+
+  /* Initialize Timer1A */
+  TA1CTL = TASSEL_2 + MC_2;
 
   curPalette = (Palette *) &basicPalette;
   u_char width = screenWidth, height = screenHeight;
 
   clearScreen(curPalette->colors[0]);
 
-  drawSprite16x16(56, 0, (Sprite16x16 *) &smileyFaces[1]);
+  drawSmiley(WORKING);
 
-  for (int i = 0; i < 3; i++) {
-    drawSprite8x16(i*8, 0, (Sprite8x16 *) &ssdNumbers[i+1]);
-    drawSprite8x16(104 + i*8, 0, (Sprite8x16 *) &ssdNumbers[0]);
-  }
+  boardInit();
+  cursorX = BOARD_WIDTH / 2;
+  cursorY = BOARD_WIDTH / 2;
+  
+  drawTime(0);
+  drawMineCount();
+  drawBoard();
+  drawCursor(cursorX, cursorY);
 
-  for (int i = 0; i < 18; i++) {
-    for(int j = 0; j < 16; j++) {
-      drawSprite8x8(j*8, 16+i*8, (Sprite8x8 *) &uncheckedSquares[0]);
-    }
-  }
+  boardGenerateMines(cursorX, cursorY);
+  drawMineCount();
+  drawMines();
 
-  drawSprite16x16(56, 0, (Sprite16x16 *) &smileyFaces[0]);
-
-  drawRectOutline(56, 80, 8, 8, curPalette->colors[6]);
+  drawSmiley(COOL);
 }
