@@ -71,12 +71,13 @@ void drawBoard(void) {
   }
 }
 
-void drawMines() {
+void drawMines(u_char isVictory) {
   for (int i = 0; i < BOARD_WIDTH; i++) {
     for (int j = 0; j < BOARD_HEIGHT; j++) {
       if (isMine(i, j)) {
 	drawSprite8x8(i*8, 16 + j*8,
-		      (Sprite8x8 *) &bombSquares[isFlagged(i, j) ? 1 : 0]);
+		      (Sprite8x8 *) (isVictory ? &uncheckedSquares[1] :
+				     &bombSquares[isFlagged(i, j) ? 1 : 0]));
       }
     }
   }

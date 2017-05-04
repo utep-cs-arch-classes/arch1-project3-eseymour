@@ -13,6 +13,6 @@ void drawMineCount(void);
 void drawPressed(u_char x, u_char y);
 void drawSmiley(u_char face);
 void drawBoard(void);
-void drawMines(void);
+void drawMines(u_char isVictory);
 
 #endif /* DRAW_INCLUDED */
