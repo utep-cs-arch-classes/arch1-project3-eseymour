@@ -28,7 +28,7 @@ int main(void) {
 
   boardInit();
   cursorX = BOARD_WIDTH / 2;
-  cursorY = BOARD_WIDTH / 2;
+  cursorY = BOARD_HEIGHT / 2;
   
   drawTime(0);
   drawMineCount();
@@ -37,7 +37,17 @@ int main(void) {
 
   boardGenerateMines(cursorX, cursorY);
   drawMineCount();
+
+  for(int i = 0; i < BOARD_WIDTH; i++) {
+    for (int j = 0; j < BOARD_HEIGHT; j++) {
+      if(!isMine(i, j)) {
+	setPosition(i, j, EXPOSED + EMPTY);
+      }
+    }
+  }
+  drawBoard();
   drawMines();
+  drawCursor(cursorX, cursorY);
 
   drawSmiley(COOL);
 }

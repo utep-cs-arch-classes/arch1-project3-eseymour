@@ -15,34 +15,13 @@ board.o: board.h draw.h random.h
 
 draw.o: draw.h board.h sprites.h
 
+drawBlock.o: draw.h board.h sprites.h
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-random.o: random.h
+Random.o: random.h
 
 sprites.o: sprites.h
 
-minesweeper.elf: minesweeper.o board.o draw.o random.o sprites.o 
+minesweeper.elf: minesweeper.o board.o draw.o drawBlock.o random.o sprites.o 
 	${CC} ${CFLAGS} ${LDFLAGS} -o $@ $^ -lTimer -lLcd -lSprite
 
 load: minesweeper.elf

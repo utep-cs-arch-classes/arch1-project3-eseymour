@@ -7,6 +7,8 @@
 #include "board.h"
 #include "sprites.h"
 
+/* Implemented in assembly */
+/*
 void drawBlock(u_char x, u_char y) {
   u_char screenX, screenY;
   screenX = x * 8;
@@ -30,6 +32,7 @@ void drawBlock(u_char x, u_char y) {
 
   drawSprite8x8(screenX, screenY, (Sprite8x8 *) sprite);
 }
+*/
 
 void drawCursor(u_char x, u_char y) {
   drawRectOutline(x * 8, 16 + y * 8, 8, 8, curPalette->colors[6]);
