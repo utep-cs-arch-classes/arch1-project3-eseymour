@@ -8,16 +8,16 @@
 
 #define POSITION_MASK 0x0F
 
-#define MINE_MASK 0x01
-#define EMPTY 0x00
-#define MINE 0x01
+#define MINE_MASK 0x1
+#define EMPTY 0x0
+#define MINE 0x1
 
-#define LABEL_MASK 0x0E
-#define UNMARKED 0x00
-#define FLAGGED 0x02
-#define QUESTION 0x04
-#define EXPAND 0x06 /* Used to mark blocks that should be expanded */
-#define EXPOSED 0x08
+#define LABEL_MASK 0xE
+#define UNMARKED 0x0
+#define FLAGGED 0x2
+#define QUESTION 0x4
+#define EXPAND 0x6 /* Used to mark blocks that should be expanded */
+#define EXPOSED 0x8
 
 extern u_char minesRemaining;
 

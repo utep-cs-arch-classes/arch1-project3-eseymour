@@ -2,6 +2,7 @@
 #include <lcdutils.h>
 #include <lcddraw.h>
 #include <msp430.h>
+#include <p1switches.h>
 #include <p2switches.h>
 #include <sprite.h>
 
@@ -12,7 +13,8 @@
 
 #define NOT_STARTED 0
 #define STARTED 1
-#define OVER 2
+#define LOSS 2
+#define VICTORY 3
 
 #define NONE 0
 #define ERROR 1
@@ -20,14 +22,14 @@
 #define LEFT 3
 #define RIGHT 4
 #define DOWN 5
+#define CLICK 6
+#define FLAG 7
+#define MARK_QUESTION 8
 
 signed char cursorX, cursorY;
-u_char gameState, inputState;
+u_char gameState, inputState, curSmiley, nextSmiley;
 
 void moveCursor() {
-  // Draw working smiley
-  drawSmiley(WORKING);
-  
   // Clear cursor
   drawBlock(cursorX, cursorY);
 
@@ -53,13 +55,62 @@ void moveCursor() {
   cursorY = cursorY >= BOARD_HEIGHT ? BOARD_HEIGHT - 1 : cursorY;
 
   drawCursor(cursorX, cursorY);
-  drawSmiley(SMILE);
 }
 
-int main(void) {
+void clickAtCursor(void) {
+  if (gameState == NOT_STARTED) {
+    boardGenerateMines(cursorX, cursorY);
+    drawMineCount();
+    gameState == STARTED;
+  }
+
+  if (isMine(cursorX, cursorY)) {
+    gameState = LOSS;
+    return;
+  }
+
+  expandBlock(cursorX, cursorY);
+  drawCursor(cursorX, cursorY);
+}
+
+void flagAtCursor(void) {
+  u_char block = getPosition(cursorX, cursorY);
+
+  switch (block) {
+  case FLAGGED:
+    minesRemaining++;
+    setPosition(cursorX, cursorY, UNMARKED);
+    break;
+  case FLAGGED + MINE:
+    minesRemaining++;
+    setPosition(cursorX, cursorY, UNMARKED + MINE);
+    break;
+  case EXPOSED:
+    break;
+  case UNMARKED:
+  case QUESTION:
+    minesRemaining--;
+    setPosition(cursorX, cursorY, FLAGGED);
+    break;
+  case UNMARKED + MINE:
+  case QUESTION + MINE:
+    minesRemaining--;
+    setPosition(cursorX, cursorY, FLAGGED + MINE);
+  }
+
+  drawMineCount();
+  drawBlock(cursorX, cursorY);
+  drawCursor(cursorX, cursorY);
+}
+
+void markQuestionAtCursor(void) {
+}
+
+void main(void) {
   configureClocks();
   rngSeedSram();
   lcd_init();
+  p1sw_init(0x8);
   p2sw_init(0xF);
   or_sr(0x8);
 
@@ -71,7 +122,8 @@ int main(void) {
 
   clearScreen(curPalette->colors[0]);
 
-  drawSmiley(WORKING);
+  curSmiley = WORKING;
+  drawSmiley(curSmiley);
 
   boardInit();
   cursorX = BOARD_WIDTH / 2;
@@ -82,48 +134,98 @@ int main(void) {
   drawBoard();
   drawCursor(cursorX, cursorY);
 
-  drawSmiley(SMILE);
+  nextSmiley = SMILE;
   inputState = NONE;
-  while (1) {
-    
-    switch (p2sw_read() & 0xF) {
-    case 0xF:
-      if (inputState != NONE) {
-	moveCursor();
-      }
-      inputState = NONE;
-      break;
-    case 0xE:
-      inputState = inputState == NONE || inputState == UP ? UP : ERROR;
-      break;
-    case 0xD:
-      inputState = inputState == NONE || inputState == DOWN ? DOWN : ERROR;
-      break;
-    case 0xB:
-      inputState = inputState == NONE || inputState == LEFT ? LEFT : ERROR;
-      break;
-    case 0x7:
-      inputState = inputState == EMPTY || inputState == RIGHT ? RIGHT : ERROR;
-      break;
+  gameState = NOT_STARTED;
+  
+  while (gameState == NOT_STARTED || gameState == STARTED) {
+    /* Choose proper Smiley */
+    switch (inputState) {
+    case NONE:
+    case ERROR:
     default:
-      inputState = ERROR;
+      nextSmiley = SMILE;
+      break;
+    case UP:
+    case DOWN:
+    case LEFT:
+    case RIGHT:
+    case CLICK:
+    case FLAG:
+    case MARK_QUESTION:
+      nextSmiley = WORKING;
     }
-  }
-  
-  boardGenerateMines(cursorX, cursorY);
-  drawMineCount();
 
-  for (int i = 0; i < BOARD_WIDTH; i++) {
-    for (int j = 0; j < BOARD_HEIGHT; j++) {
-      if (!isMine(i, j)) {
-	setPosition(i, j, EXPOSED + EMPTY);
+    /* Update Smiley if necessary */
+    if (curSmiley != nextSmiley) {
+      drawSmiley(nextSmiley);
+      curSmiley = nextSmiley;
+    }
+    
+    if(p1sw_read() & 0x8) {
+      /* Arrow keys */
+      switch (p2sw_read() & 0xF) {
+      case 0xF:
+	if (inputState != NONE) {
+	  moveCursor();
+	}
+	inputState = NONE;
+	break;
+      case 0xE:
+	inputState = inputState == NONE || inputState == UP ? UP : ERROR;
+	break;
+      case 0xD:
+	inputState = inputState == NONE || inputState == DOWN ? DOWN : ERROR;
+	break;
+      case 0xB:
+	inputState = inputState == NONE || inputState == LEFT ? LEFT : ERROR;
+	break;
+      case 0x7:
+	inputState = inputState == NONE || inputState == RIGHT ? RIGHT : ERROR;
+	break;
+      default:
+	inputState = ERROR;
+      }
+    }
+    else {
+      /* Action Keys */
+      switch (p2sw_read() & 0xF) {
+      case 0xF:
+	switch (inputState) {
+	case CLICK:
+	  clickAtCursor();
+	  break;
+	case FLAG:
+	  flagAtCursor();
+	  break;
+	case MARK_QUESTION:
+	  markQuestionAtCursor();
+	}
+	
+	inputState = NONE;
+	break;
+      case 0xE:
+	inputState = inputState == NONE || inputState == CLICK ? CLICK : ERROR;
+	break;
+      case 0xD:
+	inputState = inputState == NONE || inputState == FLAG ? FLAG : ERROR;
+	break;
+      case 0xB:
+	inputState = inputState == NONE || inputState == MARK_QUESTION ? MARK_QUESTION : ERROR;
+	break;
+      case 0x7:
+	/* Restart the game */
+	return;
+      default:
+	inputState = ERROR;
       }
     }
   }
-  
-  drawBoard();
-  drawMines(1);
+
+  drawMines(gameState == VICTORY ? 1 : 0);
+  drawSmiley(gameState == VICTORY ? COOL : DEAD);
   drawCursor(cursorX, cursorY);
 
-  drawSmiley(COOL);
+  while (1) {
+  }
 }

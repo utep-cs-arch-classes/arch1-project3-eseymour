@@ -49,7 +49,7 @@ void drawMineCount(void) {
   u_char remaining = minesRemaining;
 
   for (int i = 0; i < 3; i++) {
-    drawSprite8x16(i*8, 0, (Sprite8x16 *) &ssdNumbers[remaining % 10]);
+    drawSprite8x16(16 - i*8, 0, (Sprite8x16 *) &ssdNumbers[remaining % 10]);
     remaining /= 10;
   }
 }

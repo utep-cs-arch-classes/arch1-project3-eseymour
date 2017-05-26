@@ -50,10 +50,12 @@ void setPosition(u_char x, u_char y, u_char newVal) {
   newVal &= POSITION_MASK;
 
   if (x % 2 == 0) {
-    board[index] = (board[index] & (POSITION_MASK << 4)) + newVal; 
+    board[index] &= POSITION_MASK << 4;
+    board[index] |= newVal; 
   }
   else {
-    board[index] = (board[index] & POSITION_MASK) + (newVal << 4);
+    board[index] &= POSITION_MASK;
+    board[index] |= newVal << 4;
   }
 }
 
@@ -111,8 +113,71 @@ u_char numNeighboringFlags(u_char x, u_char y) {
   return numFlags;
 }
 
+void expandIteratively(void);
+void expandPart(u_char x, u_char y);
+
 void expandBlock(u_char x, u_char y) {
   setPosition(x, y, EXPOSED);
 
+  if(numNeighboringMines(x, y) == 0) {
+    for (int i = -1; i <= 1; i++) {
+      for (int j = -1; j <= 1; j++) {
+	if (i == 0 && j == 0) {
+	  continue;
+	}
+
+	if (i+x < 0 || i+x >= BOARD_WIDTH || j+y < 0 || j+y >= BOARD_HEIGHT) {
+	  continue;
+	}
+	
+	if (getPosition(i+x, j+y) != EXPOSED) {
+	  setPosition(i+x, j+y, EXPAND);
+	}
+      }
+    }
+
+    expandIteratively();
+  }
+  
+  drawBlock(x, y);
+}
+
+void expandIteratively(void) {
+  u_char keepExpanding;
+
+  do {
+    keepExpanding = 0;
+    for (int i = 0; i < BOARD_WIDTH; i++) {
+      for (int j = 0; j < BOARD_HEIGHT; j++) {
+	if (getPosition(i, j) == EXPAND) {
+	  expandPart(i, j);
+	  keepExpanding = 1;
+	}
+      }
+    }
+  } while (keepExpanding);
+}
+
+void expandPart(u_char x, u_char y) {
+  setPosition(x, y, EXPOSED);
+
+  if(numNeighboringMines(x, y) == 0) {
+    for (int i = -1; i <= 1; i++) {
+      for (int j = -1; j <= 1; j++) {
+	if (i == 0 && j == 0) {
+	  continue;
+	}
+
+	if (i+x < 0 || i+x >= BOARD_WIDTH || j+y < 0 || j+y >= BOARD_HEIGHT) {
+	  continue;
+	}
+
+	if (getPosition(i+x, j+y) != EXPOSED) {
+	  setPosition(i+x, j+y, EXPAND);
+	}
+      }
+    }
+  }
+  
   drawBlock(x, y);
 }
